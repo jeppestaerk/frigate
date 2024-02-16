@@ -2,7 +2,6 @@
 
 import logging
 import multiprocessing as mp
-import queue
 import signal
 import threading
 from typing import Optional
@@ -16,6 +15,7 @@ from ws4py.server.wsgirefserver import (
 )
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
 
+from frigate.comms.detections_updater import DetectionSubscriber, DetectionTypeEnum
 from frigate.comms.ws import WebSocket
 from frigate.config import FrigateConfig
 from frigate.output.birdseye import Birdseye
@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 def output_frames(
     config: FrigateConfig,
-    video_output_queue: mp.Queue,
 ):
     threading.current_thread().name = "output"
     setproctitle("frigate.output")
@@ -56,6 +55,8 @@ def output_frames(
     websocket_server.initialize_websockets_manager()
     websocket_thread = threading.Thread(target=websocket_server.serve_forever)
 
+    detection_subscriber = DetectionSubscriber(DetectionTypeEnum.video)
+
     jsmpeg_cameras: dict[str, JsmpegCamera] = {}
     birdseye: Optional[Birdseye] = None
     preview_recorders: dict[str, PreviewRecorder] = {}
@@ -72,17 +73,19 @@ def output_frames(
 
     websocket_thread.start()
 
-    while not stop_event.is_set():
-        try:
-            (
-                camera,
-                frame_time,
-                current_tracked_objects,
-                motion_boxes,
-                regions,
-            ) = video_output_queue.get(True, 1)
-        except queue.Empty:
+    while not stop_event.wait(0.2):
+        (_, data) = detection_subscriber.get_data()
+
+        if not data:
             continue
+
+        (
+            camera,
+            frame_time,
+            current_tracked_objects,
+            motion_boxes,
+            regions,
+        ) = data
 
         frame_id = f"{camera}{frame_time}"
 
@@ -122,14 +125,19 @@ def output_frames(
 
         previous_frames[camera] = frame_time
 
-    while not video_output_queue.empty():
+    while True:
+        (_, data) = detection_subscriber.get_data()
+
+        if not data:
+            break
+
         (
             camera,
             frame_time,
             current_tracked_objects,
             motion_boxes,
             regions,
-        ) = video_output_queue.get(True, 10)
+        ) = data
 
         frame_id = f"{camera}{frame_time}"
         frame = frame_manager.get(frame_id, config.cameras[camera].frame_shape_yuv)

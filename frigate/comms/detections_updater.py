@@ -8,8 +8,8 @@ from typing import Optional
 import zmq
 
 from frigate.const import (
-    PORT_INTER_PROCESS_DETECTION_SUB,
     PORT_INTER_PROCESS_DETECTION_PUB,
+    PORT_INTER_PROCESS_DETECTION_SUB,
 )
 
 
@@ -40,12 +40,16 @@ class DetectionProxyRunner(threading.Thread):
         incoming.bind(f"tcp://127.0.0.1:{PUB_PORT}")
         outgoing = self.context.socket(zmq.XPUB)
         outgoing.bind(f"tcp://127.0.0.1:{SUB_PORT}")
-        zmq.proxy(
-            incoming, outgoing
-        )  # blocking, will unblock when context is destroyed
 
-        incoming.close()
-        outgoing.close()
+        try:
+            zmq.proxy(
+                incoming, outgoing
+            )  # blocking, will unblock when context is destroyed
+        except zmq.ZMQError:
+            pass
+        finally:
+            incoming.close()
+            outgoing.close()
 
 
 class DetectionProxy:
