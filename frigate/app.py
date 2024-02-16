@@ -18,6 +18,7 @@ from playhouse.sqlite_ext import SqliteExtDatabase
 from playhouse.sqliteq import SqliteQueueDatabase
 
 from frigate.comms.config_updater import ConfigPublisher
+from frigate.comms.detections_updater import DetectionProxy
 from frigate.comms.dispatcher import Communicator, Dispatcher
 from frigate.comms.inter_process import InterProcessCommunicator
 from frigate.comms.mqtt import MqttClient
@@ -329,6 +330,7 @@ class FrigateApp:
     def init_inter_process_communicator(self) -> None:
         self.inter_process_communicator = InterProcessCommunicator()
         self.inter_config_updater = ConfigPublisher()
+        self.inter_detection_proxy = DetectionProxy()
 
     def init_web_server(self) -> None:
         self.flask_app = create_app(
@@ -687,6 +689,7 @@ class FrigateApp:
         # Stop Communicators
         self.inter_process_communicator.stop()
         self.inter_config_updater.stop()
+        self.inter_detection_proxy.stop()
 
         self.dispatcher.stop()
         self.detected_frames_processor.join()
