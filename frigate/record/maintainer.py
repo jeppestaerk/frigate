@@ -508,4 +508,5 @@ class RecordingMaintainer(threading.Thread):
 
         self.requestor.stop()
         self.config_subscriber.stop()
+        self.detection_subscriber.stop()
         logger.info("Exiting recording maintenance...")

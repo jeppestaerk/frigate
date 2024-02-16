@@ -143,6 +143,8 @@ def output_frames(
         frame = frame_manager.get(frame_id, config.cameras[camera].frame_shape_yuv)
         frame_manager.delete(frame_id)
 
+    detection_subscriber.stop()
+
     for jsmpeg in jsmpeg_cameras.values():
         jsmpeg.stop()
 

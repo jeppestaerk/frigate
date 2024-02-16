@@ -350,3 +350,4 @@ class AudioEventMaintainer(threading.Thread):
         self.logpipe.close()
         self.requestor.stop()
         self.config_subscriber.stop()
+        self.detection_publisher.stop()
