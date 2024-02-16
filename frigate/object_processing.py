@@ -1117,6 +1117,7 @@ class TrackedObjectProcessor(threading.Thread):
             ]
 
             # publish info on this frame
+            start = datetime.datetime.now().timestamp()
             self.detection_publisher.send_data(
                 (
                     camera,
@@ -1126,6 +1127,7 @@ class TrackedObjectProcessor(threading.Thread):
                     regions,
                 )
             )
+            logger.error(f"The input took {(datetime.datetime.now().timestamp() - start) * 1000}")
 
             # update zone counts for each label
             # for each zone in the current camera
@@ -1202,4 +1204,5 @@ class TrackedObjectProcessor(threading.Thread):
                 event_id, camera = self.event_processed_queue.get()
                 self.camera_states[camera].finished(event_id)
 
+        self.detection_publisher.stop()
         logger.info("Exiting object processor...")
