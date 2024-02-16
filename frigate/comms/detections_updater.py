@@ -8,7 +8,6 @@ from typing import Optional
 import zmq
 
 from frigate.const import (
-    PORT_INTER_PROCESS_DETECTION_CONTROL,
     PORT_INTER_PROCESS_DETECTION_PUB,
     PORT_INTER_PROCESS_DETECTION_SUB,
 )
@@ -50,7 +49,6 @@ class DetectionProxyRunner(threading.Thread):
         zmq.proxy_steerable(
             incoming, outgoing, None, control
         )  # blocking, will unblock terminate message is received
-        print("the proxy has stopped")
         incoming.close()
         outgoing.close()
 

@@ -189,7 +189,7 @@ class AudioEventMaintainer(threading.Thread):
         self.detection_publisher = DetectionPublisher(DetectionTypeEnum.audio)
 
     def detect_audio(self, audio) -> None:
-        if not self.config.audio.enabled:
+        if not self.config.audio.enabled or self.stop_event.is_set():
             return
 
         audio_as_float = audio.astype(np.float32)
