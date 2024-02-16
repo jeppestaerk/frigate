@@ -817,7 +817,6 @@ class TrackedObjectProcessor(threading.Thread):
         event_queue,
         event_processed_queue,
         video_output_queue,
-        recordings_info_queue,
         ptz_autotracker_thread,
         stop_event,
     ):

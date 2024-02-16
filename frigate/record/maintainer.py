@@ -57,13 +57,7 @@ class SegmentInfo:
 
 
 class RecordingMaintainer(threading.Thread):
-    def __init__(
-        self,
-        config: FrigateConfig,
-        object_recordings_info_queue: mp.Queue,
-        audio_recordings_info_queue: Optional[mp.Queue],
-        stop_event: MpEvent,
-    ):
+    def __init__(self, config: FrigateConfig, stop_event: MpEvent):
         threading.Thread.__init__(self)
         self.name = "recording_maintainer"
         self.config = config

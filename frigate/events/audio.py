@@ -69,7 +69,6 @@ def get_ffmpeg_command(ffmpeg: FfmpegConfig) -> list[str]:
 
 def listen_to_audio(
     config: FrigateConfig,
-    recordings_info_queue: mp.Queue,
     camera_metrics: dict[str, CameraMetricsTypes],
 ) -> None:
     stop_event = mp.Event()
@@ -96,7 +95,6 @@ def listen_to_audio(
         if camera.enabled and camera.audio.enabled_in_config:
             audio = AudioEventMaintainer(
                 camera,
-                recordings_info_queue,
                 camera_metrics,
                 stop_event,
             )
@@ -168,7 +166,6 @@ class AudioEventMaintainer(threading.Thread):
     def __init__(
         self,
         camera: CameraConfig,
-        recordings_info_queue: mp.Queue,
         camera_metrics: dict[str, CameraMetricsTypes],
         stop_event: mp.Event,
     ) -> None:

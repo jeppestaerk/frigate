@@ -22,6 +22,8 @@ class DetectionTypeEnum(str, Enum):
 class DetectionProxyRunner(threading.Thread):
 
     def __init__(self, context: zmq.Context[zmq.Socket]) -> None:
+        threading.Thread.__init__(self)
+        self.name = "detection_proxy"
         self.context = context
 
     def run(self) -> None:
@@ -68,8 +70,7 @@ class DetectionPublisher:
         )
         self.topic = topic
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, topic.value)
+        self.socket = self.context.socket(zmq.PUB)
         self.socket.connect(f"tcp://127.0.0.1:{port}")
 
     def send_data(self, payload: any) -> None:

@@ -203,16 +203,6 @@ class FrigateApp:
             maxsize=sum(camera.enabled for camera in self.config.cameras.values()) * 2
         )
 
-        # Queue for object recordings info
-        self.object_recordings_info_queue: Queue = mp.Queue()
-
-        # Queue for audio recordings info if enabled
-        self.audio_recordings_info_queue: Optional[Queue] = (
-            mp.Queue()
-            if len([c for c in self.config.cameras.values() if c.audio.enabled]) > 0
-            else None
-        )
-
         # Queue for timeline events
         self.timeline_queue: Queue = mp.Queue()
 
@@ -288,11 +278,7 @@ class FrigateApp:
         recording_process = mp.Process(
             target=manage_recordings,
             name="recording_manager",
-            args=(
-                self.config,
-                self.object_recordings_info_queue,
-                self.audio_recordings_info_queue,
-            ),
+            args=(self.config,),
         )
         recording_process.daemon = True
         self.recording_process = recording_process
@@ -419,7 +405,6 @@ class FrigateApp:
             self.event_queue,
             self.event_processed_queue,
             self.video_output_queue,
-            self.object_recordings_info_queue,
             self.ptz_autotracker_thread,
             self.stop_event,
         )
@@ -502,7 +487,6 @@ class FrigateApp:
                 name="audio_capture",
                 args=(
                     self.config,
-                    self.audio_recordings_info_queue,
                     self.camera_metrics,
                 ),
             )
@@ -711,8 +695,6 @@ class FrigateApp:
             self.event_processed_queue,
             self.video_output_queue,
             self.detected_frames_queue,
-            self.object_recordings_info_queue,
-            self.audio_recordings_info_queue,
             self.log_queue,
         ]:
             if queue is not None:
